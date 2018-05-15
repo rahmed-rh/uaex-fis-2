@@ -1,0 +1,29 @@
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vodafone-fis
+    spec:
+      containers:
+        - 
+          resources:
+            requests:
+              cpu: 
+              memory: 
+            limits:
+              cpu: 
+              memory: 512Mi
+          env:
+          - name: KIE_SERVICE_NAME
+            value: uaex-rules-api
+          - name: KIE_SERVICE_PORT
+            value: 8080
+          - name: KIE_CONTAINER
+            value: payments
+          - name: KIE_SERVICE_USERNAME
+            value: stelios
+          - name: KIE_SERVICE_PASSWORD
+            value: stelios123!
+          - name: JAVA_DIAGNOSTICS
+            value: true

@@ -1,0 +1,35 @@
+camel:
+  springboot:
+    # The Camel context name
+    name: FisRestSQL
+
+# Binding health checks to a different port
+management:
+  port: 8081
+
+server:
+  port: 8080
+
+# disable all management enpoints except health
+endpoints:
+  enabled: false
+  health:
+    enabled: true 
+
+kie:
+  host: ${KIE_SERVICE_NAME}
+  port: ${KIE_SERVICE_PORT}
+  container-id: ${KIE_CONTAINER}
+  username: ${KIE_SERVICE_USERNAME}
+  password: ${KIE_SERVICE_PASSWORD}
+  
+# The application configuration properties
+quickstart:
+  generateOrderPeriod: 2s
+  processOrderPeriod: 5s
+
+apiContext: /api
+
+apidoc:
+  host: 0.0.0.0
+  port: ${server.port}
