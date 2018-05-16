@@ -86,20 +86,31 @@
 			<artifactId>camel-script</artifactId>
 		</dependency>
 
-		<!-- dependency>
-			<groupId>org.kie.remote</groupId>
-			<artifactId>kie-remote-client</artifactId>
-		</dependency> -->
-		
+		<!-- ActiveMQ -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-camel</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-pool</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-sjms-starter</artifactId>
+		</dependency>
+
+		<!-- BRMS -->
+		<!-- dependency> <groupId>org.kie.remote</groupId> <artifactId>kie-remote-client</artifactId> 
+			</dependency> -->
+
 		<dependency>
 			<groupId>org.kie.server</groupId>
 			<artifactId>kie-server-client</artifactId>
 		</dependency>
 
-		<!-- dependency>
-			<groupId>org.kie.remote</groupId>
-			<artifactId>kie-server-remote</artifactId>
-		</dependency>-->
+		<!-- dependency> <groupId>org.kie.remote</groupId> <artifactId>kie-server-remote</artifactId> 
+			</dependency> -->
 
 		<dependency>
 			<groupId>org.kie</groupId>
@@ -211,8 +222,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
-
 	<profiles>
 		<profile>
 			<id>container</id>

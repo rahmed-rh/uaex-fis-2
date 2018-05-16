@@ -28,5 +28,15 @@ spec:
             value: kieserver
           - name: KIE_SERVICE_PASSWORD
             value: kieserver123!
+          - name: ACTIVEMQ_SERVICE_NAME
+            value: broker-uaex-amq-tcp
+          - name: ACTIVEMQ_SERVICE_PORT
+            value: 61616
+          - name: ACTIVEMQ_BROKER_USERNAME
+            value: admin
+          - name: ACTIVEMQ_BROKER_PASSWORD
+            value: passw0rd
+          - name: ACTIVEMQ_POOL_MAX_CONNECTIONS
+            value: 10
           - name: JAVA_DIAGNOSTICS
             value: true

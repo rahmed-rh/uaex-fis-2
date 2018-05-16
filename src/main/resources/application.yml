@@ -22,6 +22,13 @@ kie:
   container-id: ${KIE_CONTAINER}
   username: ${KIE_SERVICE_USERNAME}
   password: ${KIE_SERVICE_PASSWORD}
+  
+activemq:
+  broker:
+    host: ${ACTIVEMQ_SERVICE_NAME}
+    port: ${ACTIVEMQ_SERVICE_PORT}
+    username: ${ACTIVEMQ_BROKER_USERNAME}
+    password: ${ACTIVEMQ_BROKER_PASSWORD}
 
 # The application configuration properties
 quickstart:

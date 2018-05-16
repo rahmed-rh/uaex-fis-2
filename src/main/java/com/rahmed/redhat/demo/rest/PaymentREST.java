@@ -19,6 +19,8 @@ public class PaymentREST extends RouteBuilder {
 				.choice()
 					.when().simple("${body.approved} == true")
 					 	.log("Payment Approved")
+					 	//I need to create a JMS
+					 	//.to("amq:queue:TESTQUEUE")
 						.transform(constant("OK"))
 					.otherwise()
 						.log("Payment Rejected")
