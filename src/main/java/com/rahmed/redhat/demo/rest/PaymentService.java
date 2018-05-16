@@ -15,12 +15,25 @@
  */
 package com.rahmed.redhat.demo.rest;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.drools.core.command.runtime.rule.GetObjectsCommand;
 import org.kie.api.KieServices;
@@ -42,24 +55,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import com.redhat.consulting.domain.InFact;
-
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.Proxy;
-import java.net.URL;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 
 @Component
 @ConfigurationProperties(prefix = "kie")
@@ -147,6 +142,12 @@ public class PaymentService {
 		return "http://" + host + ":" + port + "/kie-server/services/rest/server";
 	}
 
+	@PostConstruct
+	public void prepareKieConfig() {
+		
+		LOG.info("PostConstruct  We should add our prparation here======  " );
+	}
+	
 	private List<String> kieRestAPI(Double value) {
 
 		KieServicesConfiguration configuration = KieServicesFactory.newRestConfiguration(getKieUrl(), username,
@@ -160,6 +161,7 @@ public class PaymentService {
 				return null;
 			}
 		}
+		
 		MarshallingFormat marshallingFormat = getMarshallingFormat();
 		configuration.setMarshallingFormat(marshallingFormat);
 		if (MarshallingFormat.JAXB.equals(marshallingFormat)) {
