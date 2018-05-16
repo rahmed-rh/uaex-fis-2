@@ -2,9 +2,18 @@ package com.redhat.consulting.domain;
 
 import java.io.Serializable;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
+@SuppressWarnings("serial")
+@XmlRootElement(name = "com.redhat.consulting.domain.InFact")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class InFact implements Serializable {
 
+	@org.kie.api.definition.type.Label("paymentValue")
+	@XmlElement
 	private Double paymentValue;
 
 	public InFact() {
