@@ -1,5 +1,6 @@
 package com.rahmed.redhat.demo.rest;
 
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ public class PaymentREST extends RouteBuilder {
 					 	.log("Payment Approved")
 					 	//I need to create a JMS
 					 	.bean(ProcessorBean.class, "processJMSMessage(${body})")
+					 	.setExchangePattern(ExchangePattern.InOnly)
 					 	.to("activemq:queue:TESTQUEUE")
 						.transform(constant("OK"))
 					.otherwise()
