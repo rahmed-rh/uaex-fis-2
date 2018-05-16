@@ -15,6 +15,8 @@
  */
 package com.rahmed.redhat.demo.rest;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +29,8 @@ import org.kie.api.command.Command;
 import org.kie.api.command.KieCommands;
 import org.kie.api.runtime.ExecutionResults;
 import org.kie.internal.command.CommandFactory;
+import org.kie.remote.common.rest.KieRemoteHttpRequest;
+import org.kie.server.api.marshalling.MarshallingFormat;
 import org.kie.server.api.model.ServiceResponse;
 import org.kie.server.client.KieServicesClient;
 import org.kie.server.client.KieServicesConfiguration;
@@ -38,6 +42,24 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import com.redhat.consulting.domain.InFact;
+
+import javax.jms.ConnectionFactory;
+import javax.jms.Queue;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.Proxy;
+import java.net.URL;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 @Component
 @ConfigurationProperties(prefix = "kie")
@@ -129,10 +151,23 @@ public class PaymentService {
 
 		KieServicesConfiguration configuration = KieServicesFactory.newRestConfiguration(getKieUrl(), username,
 				password);
-		Set<Class<?>> allClasses = new HashSet<Class<?>>();
-		allClasses.add(com.redhat.consulting.domain.InFact.class);
-		configuration.addExtraClasses(allClasses);
-		configuration.addJaxbClasses(allClasses);
+		if (getKieUrl().toLowerCase().startsWith("https")) {
+			configuration.setUseSsl(true);
+			try {
+				forgiveUnknownCert();
+			} catch (Exception e) {
+				LOG.error("Unable to certify server SSL certifdicate  ", e);
+				return null;
+			}
+		}
+		MarshallingFormat marshallingFormat = getMarshallingFormat();
+		configuration.setMarshallingFormat(marshallingFormat);
+		if (MarshallingFormat.JAXB.equals(marshallingFormat)) {
+			Set<Class<?>> classes = new HashSet<Class<?>>();
+			classes.add(InFact.class);
+			configuration.addExtraClasses(classes);
+		}
+		
 
 		KieServicesClient kieServicesClient = KieServicesFactory.newKieServicesClient(configuration);
 		RuleServicesClient ruleClient = kieServicesClient.getServicesClient(RuleServicesClient.class);
@@ -153,11 +188,70 @@ public class PaymentService {
 
 		LOG.info(" APPROVALS List " + response.getResult().getValue(RESULTS_HANDLE)); // returns the ArrayList
 
-		
-
 		return response.getResult().getValue(RESULTS_HANDLE) != null
 				? (ArrayList<String>) response.getResult().getValue(RESULTS_HANDLE)
 				: null;
+	}
+
+	private MarshallingFormat getMarshallingFormat() {
+		// can use xstream, xml (jaxb), or json
+		//String type = System.getProperty("MarshallingFormat", "xstream");
+		String type = System.getProperty("MarshallingFormat", "jaxb");
+		if (type.trim().equalsIgnoreCase("jaxb")) {
+			type = "xml";
+		}
+		MarshallingFormat marshallingFormat = MarshallingFormat.fromType(type);
+		LOG.debug(String.format("--------->  %s MarshallingFormat.%s", marshallingFormat.getType(),
+				marshallingFormat.name()));
+		return marshallingFormat;
+	}
+
+	// only needed for non-production test scenarios where the TLS certificate isn't
+	// set up properly
+	private void forgiveUnknownCert() throws Exception {
+		KieRemoteHttpRequest.ConnectionFactory connf = new KieRemoteHttpRequest.ConnectionFactory() {
+			public HttpURLConnection create(URL u) throws IOException {
+				return forgiveUnknownCert((HttpURLConnection) u.openConnection());
+			}
+
+			public HttpURLConnection create(URL u, Proxy p) throws IOException {
+				return forgiveUnknownCert((HttpURLConnection) u.openConnection(p));
+			}
+
+			private HttpURLConnection forgiveUnknownCert(HttpURLConnection conn) throws IOException {
+				if (conn instanceof HttpsURLConnection) {
+					HttpsURLConnection sconn = HttpsURLConnection.class.cast(conn);
+					sconn.setHostnameVerifier(new HostnameVerifier() {
+						public boolean verify(String arg0, SSLSession arg1) {
+							return true;
+						}
+					});
+					try {
+						SSLContext context = SSLContext.getInstance("TLS");
+						context.init(null, new TrustManager[] { new X509TrustManager() {
+							public void checkClientTrusted(X509Certificate[] chain, String authType)
+									throws CertificateException {
+							}
+
+							public void checkServerTrusted(X509Certificate[] chain, String authType)
+									throws CertificateException {
+							}
+
+							public X509Certificate[] getAcceptedIssuers() {
+								return null;
+							}
+						} }, null);
+						sconn.setSSLSocketFactory(context.getSocketFactory());
+					} catch (Exception e) {
+						throw new IOException(e);
+					}
+				}
+				return conn;
+			}
+		};
+		Field field = KieRemoteHttpRequest.class.getDeclaredField("CONNECTION_FACTORY");
+		field.setAccessible(true);
+		field.set(null, connf);
 	}
 
 }
