@@ -78,16 +78,17 @@ public class AMQSetup {
 
 	}
 
-	/*@Bean
+	@Bean
 	JmsTransactionManager jmsTransactionManager(@Autowired ActiveMQConnectionFactory amqConnectionFactory) {
 		return new JmsTransactionManager(amqConnectionFactory);
 
 	}
 
-	@Bean
+	/*@Bean
 	ActiveMQComponent amq(@Autowired JmsTransactionManager jmsTransactionManager) {
 
 		ActiveMQComponent amq = new ActiveMQComponent();
+		amq.setTransactionManager(jmsTransactionManager);
 		return amq;
 
 	}*/
