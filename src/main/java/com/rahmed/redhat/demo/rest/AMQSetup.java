@@ -73,7 +73,7 @@ public class AMQSetup {
 
 	@Bean
 	ActiveMQConnectionFactory amqConnectionFactory() {
-		LOG.info("host="+host+", port="+port+", username="+username+", password="+password);
+		LOG.info("host=" + host + ", port=" + port + ", username=" + username + ", password=" + password);
 		return new ActiveMQConnectionFactory(username, password, getBrokerUrl());
 
 	}
@@ -85,10 +85,15 @@ public class AMQSetup {
 	}
 
 	@Bean
-	ActiveMQComponent activemq(@Autowired JmsTransactionManager jmsTransactionManager) {
-		ActiveMQComponent amq = new ActiveMQComponent();
-		amq.setTransactionManager(jmsTransactionManager);
-		return amq;
+	ActiveMQComponent activemq(@Autowired JmsTransactionManager jmsTransactionManager,
+			@Autowired ActiveMQConnectionFactory connectionFactory) {
+		ActiveMQComponent activemq = new ActiveMQComponent();
+		activemq.setTransactionManager(jmsTransactionManager);
+		activemq.setConnectionFactory(connectionFactory);
+		// activemq.setBrokerURL(getBrokerUrl());
+		// activemq.setUserName(username);
+		// activemq.setPassword(password);
+		return activemq;
 
 	}
 
