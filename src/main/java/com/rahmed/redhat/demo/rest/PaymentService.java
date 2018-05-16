@@ -37,8 +37,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-
-
 import org.drools.compiler.runtime.pipeline.impl.DroolsJaxbHelperProviderImpl;
 import org.drools.core.command.runtime.rule.GetObjectsCommand;
 import org.kie.api.KieServices;
@@ -157,6 +155,7 @@ public class PaymentService {
 		LOG.info("PostConstruct  We should add our prparation here======  ");
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<String> kieRestAPI(Double value) {
 
 		Marshaller marshaller = null;
@@ -175,20 +174,20 @@ public class PaymentService {
 		MarshallingFormat marshallingFormat = getMarshallingFormat();
 		configuration.setMarshallingFormat(marshallingFormat);
 		if (MarshallingFormat.JAXB.equals(marshallingFormat)) {
-			
-		    ClassLoader classLoader;
+
 			Set<Class<?>> classes = new HashSet<Class<?>>();
 			classes.add(InFact.class);
 			configuration.addExtraClasses(classes);
-			if(LOG.isInfoEnabled())
-			{
-				classLoader = Thread.currentThread().getContextClassLoader() != null ? Thread.currentThread().getContextClassLoader() : CommandScript.class.getClassLoader();
-				marshaller = MarshallerFactory.getMarshaller(configuration.getExtraClasses(), configuration.getMarshallingFormat(), classLoader);
-			}
 
-	        
 		}
-
+		if (LOG.isInfoEnabled()) {
+			ClassLoader classLoader;
+			classLoader = Thread.currentThread().getContextClassLoader() != null
+					? Thread.currentThread().getContextClassLoader()
+					: CommandScript.class.getClassLoader();
+			marshaller = MarshallerFactory.getMarshaller(configuration.getExtraClasses(),
+					configuration.getMarshallingFormat(), classLoader);
+		}
 		KieServicesClient kieServicesClient = KieServicesFactory.newKieServicesClient(configuration);
 		RuleServicesClient ruleClient = kieServicesClient.getServicesClient(RuleServicesClient.class);
 		KieCommands commandsFactory = KieServices.Factory.get().getCommands();
@@ -203,12 +202,11 @@ public class PaymentService {
 		LOG.info("About to call newBatchExecution");
 
 		BatchExecutionCommand batchExecution = commandsFactory.newBatchExecution(cmds);
-		if(LOG.isInfoEnabled())
-		{
-			LOG.info("About to call executeCommandsWithResults -- batchExecution=["+marshaller.marshall(batchExecution)+"]");
+		if (LOG.isInfoEnabled()) {
+			LOG.info("About to call executeCommandsWithResults -- batchExecution=["
+					+ marshaller.marshall(batchExecution) + "]");
 		}
-		
-		
+
 		ServiceResponse<ExecutionResults> response = ruleClient.executeCommandsWithResults(containerId, batchExecution);
 
 		LOG.info("KIESERVER results identifiers ----->: " + response.getResult().getIdentifiers()
@@ -224,7 +222,7 @@ public class PaymentService {
 	private MarshallingFormat getMarshallingFormat() {
 		// can use xstream, xml (jaxb), or json
 		// String type = System.getProperty("MarshallingFormat", "xstream");
-		String type = System.getProperty("MarshallingFormat", MarshallingFormat.JAXB.getType());
+		String type = System.getProperty("MarshallingFormat", MarshallingFormat.JSON.getType());
 		if (type.trim().equalsIgnoreCase("jaxb")) {
 			type = "xml";
 		}
