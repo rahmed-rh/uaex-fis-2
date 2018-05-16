@@ -2,6 +2,8 @@ package com.rahmed.redhat.demo.rest;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.camel.component.ActiveMQComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -9,9 +11,10 @@ import org.springframework.jms.connection.JmsTransactionManager;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "activemq.broker")
+@ConfigurationProperties(prefix = "activemq")
 public class AMQSetup {
 
+	final static Logger LOG = LoggerFactory.getLogger(AMQSetup.class);
 	/**
 	 * The host name of the kie service.
 	 */
@@ -70,24 +73,23 @@ public class AMQSetup {
 
 	@Bean
 	ActiveMQConnectionFactory amqConnectionFactory() {
+		LOG.info("host="+host+", port="+port+", username="+username+", password="+password);
 		return new ActiveMQConnectionFactory(username, password, getBrokerUrl());
 
 	}
 
-	@Bean
-	@Autowired
-	JmsTransactionManager jmsTransactionManager(ActiveMQConnectionFactory amqConnectionFactory) {
+	/*@Bean
+	JmsTransactionManager jmsTransactionManager(@Autowired ActiveMQConnectionFactory amqConnectionFactory) {
 		return new JmsTransactionManager(amqConnectionFactory);
 
 	}
 
 	@Bean
-	@Autowired
-	ActiveMQComponent amq(JmsTransactionManager jmsTransactionManager) {
+	ActiveMQComponent amq(@Autowired JmsTransactionManager jmsTransactionManager) {
 
 		ActiveMQComponent amq = new ActiveMQComponent();
 		return amq;
 
-	}
+	}*/
 
 }
