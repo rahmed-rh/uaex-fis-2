@@ -16,6 +16,7 @@
 package com.rahmed.redhat.demo.rest;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
@@ -23,6 +24,7 @@ import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +36,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
+import org.drools.compiler.runtime.pipeline.impl.DroolsJaxbHelperProviderImpl;
 import org.drools.core.command.runtime.rule.GetObjectsCommand;
 import org.kie.api.KieServices;
 import org.kie.api.command.BatchExecutionCommand;
@@ -144,12 +150,13 @@ public class PaymentService {
 
 	@PostConstruct
 	public void prepareKieConfig() {
-		
-		LOG.info("PostConstruct  We should add our prparation here======  " );
+
+		LOG.info("PostConstruct  We should add our prparation here======  ");
 	}
-	
+
 	private List<String> kieRestAPI(Double value) {
 
+		Marshaller marshaller = null;
 		KieServicesConfiguration configuration = KieServicesFactory.newRestConfiguration(getKieUrl(), username,
 				password);
 		if (getKieUrl().toLowerCase().startsWith("https")) {
@@ -161,15 +168,28 @@ public class PaymentService {
 				return null;
 			}
 		}
-		
+
 		MarshallingFormat marshallingFormat = getMarshallingFormat();
 		configuration.setMarshallingFormat(marshallingFormat);
 		if (MarshallingFormat.JAXB.equals(marshallingFormat)) {
+
 			Set<Class<?>> classes = new HashSet<Class<?>>();
 			classes.add(InFact.class);
 			configuration.addExtraClasses(classes);
+
+			JAXBContext jaxbContext;
+			try {
+				jaxbContext = DroolsJaxbHelperProviderImpl
+						.createDroolsJaxbContext(Arrays.asList("com.redhat.consulting.domain.InFact"), null);
+				marshaller = jaxbContext.createMarshaller();
+				StringWriter xml = new StringWriter();
+				marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			} catch (ClassNotFoundException | JAXBException e) {
+				LOG.error("Unable to create JAXB Context  ", e);
+			}
+			
+
 		}
-		
 
 		KieServicesClient kieServicesClient = KieServicesFactory.newKieServicesClient(configuration);
 		RuleServicesClient ruleClient = kieServicesClient.getServicesClient(RuleServicesClient.class);
@@ -183,10 +203,17 @@ public class PaymentService {
 		cmds.add(commandsFactory.newGetObjects(OBJECT_HANDLE));
 		cmds.add(commandsFactory.newFireAllRules());
 		LOG.info("About to call newBatchExecution");
-		cmds.forEach(cmd -> LOG.info(""+cmd));
-		
+
 		BatchExecutionCommand batchExecution = commandsFactory.newBatchExecution(cmds);
 		LOG.info("About to call executeCommandsWithResults");
+		if (MarshallingFormat.JAXB.equals(marshallingFormat)) {
+			try {
+				marshaller.marshal(batchExecution, System.out);
+			} catch (JAXBException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		ServiceResponse<ExecutionResults> response = ruleClient.executeCommandsWithResults(containerId, batchExecution);
 
 		LOG.info("KIESERVER results identifiers ----->: " + response.getResult().getIdentifiers()
@@ -201,7 +228,7 @@ public class PaymentService {
 
 	private MarshallingFormat getMarshallingFormat() {
 		// can use xstream, xml (jaxb), or json
-		//String type = System.getProperty("MarshallingFormat", "xstream");
+		// String type = System.getProperty("MarshallingFormat", "xstream");
 		String type = System.getProperty("MarshallingFormat", MarshallingFormat.JAXB.getType());
 		if (type.trim().equalsIgnoreCase("jaxb")) {
 			type = "xml";
