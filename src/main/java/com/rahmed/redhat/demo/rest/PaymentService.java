@@ -182,7 +182,11 @@ public class PaymentService {
 		GetObjectsCommand getObjectsCommand = new GetObjectsCommand();
 		cmds.add(commandsFactory.newGetObjects(OBJECT_HANDLE));
 		cmds.add(commandsFactory.newFireAllRules());
+		LOG.info("About to call newBatchExecution");
+		cmds.forEach(cmd -> LOG.info(""+cmd));
+		
 		BatchExecutionCommand batchExecution = commandsFactory.newBatchExecution(cmds);
+		LOG.info("About to call executeCommandsWithResults");
 		ServiceResponse<ExecutionResults> response = ruleClient.executeCommandsWithResults(containerId, batchExecution);
 
 		LOG.info("KIESERVER results identifiers ----->: " + response.getResult().getIdentifiers()
