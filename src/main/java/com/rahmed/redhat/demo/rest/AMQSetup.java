@@ -84,13 +84,12 @@ public class AMQSetup {
 
 	}
 
-	/*@Bean
+	@Bean
 	ActiveMQComponent amq(@Autowired JmsTransactionManager jmsTransactionManager) {
-
 		ActiveMQComponent amq = new ActiveMQComponent();
 		amq.setTransactionManager(jmsTransactionManager);
 		return amq;
 
-	}*/
+	}
 
 }
