@@ -202,7 +202,7 @@ public class PaymentService {
 	private MarshallingFormat getMarshallingFormat() {
 		// can use xstream, xml (jaxb), or json
 		//String type = System.getProperty("MarshallingFormat", "xstream");
-		String type = System.getProperty("MarshallingFormat", "jaxb");
+		String type = System.getProperty("MarshallingFormat", "json");
 		if (type.trim().equalsIgnoreCase("jaxb")) {
 			type = "xml";
 		}

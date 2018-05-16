@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @SuppressWarnings("serial")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(propOrder = { "paymentValue" })
+@XmlType(name = "InFact",propOrder = { "paymentValue" })
 // @XmlRootElement(name = "InFact")
 // @XmlRootElement
 public class InFact implements Serializable {
