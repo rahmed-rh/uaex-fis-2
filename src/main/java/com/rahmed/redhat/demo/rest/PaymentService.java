@@ -132,6 +132,7 @@ public class PaymentService {
 		Set<Class<?>> allClasses = new HashSet<Class<?>>();
 		allClasses.add(com.redhat.consulting.domain.InFact.class);
 		configuration.addExtraClasses(allClasses);
+		configuration.addJaxbClasses(allClasses);
 
 		KieServicesClient kieServicesClient = KieServicesFactory.newKieServicesClient(configuration);
 		RuleServicesClient ruleClient = kieServicesClient.getServicesClient(RuleServicesClient.class);
