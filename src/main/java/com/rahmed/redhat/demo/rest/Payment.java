@@ -17,27 +17,25 @@ package com.rahmed.redhat.demo.rest;
 
 import java.io.Serializable;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class Payment implements Serializable {
 
-	private Integer paymentId;
+	private Integer id;
+	
 	private Integer payeeId;
+	
 	private Double amount;
-	private Boolean approved=false;
+	
+	@ApiModelProperty(required = false, hidden = true)
+	private Boolean approved = false;
 
-	public Integer getPaymentId() {
-		return paymentId;
+	public Integer getId() {
+		return id;
 	}
 
-	public Boolean getApproved() {
-		return approved;
-	}
-
-	public void setApproved(Boolean approved) {
-		this.approved = approved;
-	}
-
-	public void setPaymentId(Integer paymentId) {
-		this.paymentId = paymentId;
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
 	public Integer getPayeeId() {
@@ -56,9 +54,17 @@ public class Payment implements Serializable {
 		this.amount = amount;
 	}
 
+	public Boolean getApproved() {
+		return approved;
+	}
+
+	public void setApproved(Boolean approved) {
+		this.approved = approved;
+	}
+
 	@Override
 	public String toString() {
 
-		return "[ paymentId=" + paymentId + ", payeeId=" + payeeId + ", amount=" + amount + "]";
+		return "[ id=" + id + ", payeeId=" + payeeId + ", amount=" + amount + "]";
 	}
 }
