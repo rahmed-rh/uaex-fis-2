@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fis-rest-2
+  labels:
+    app: uaex-fis-2
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  selector:
+    app: uaex-fis-2
+  type: ClusterIP

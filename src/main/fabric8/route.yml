@@ -1,3 +1,9 @@
+apiVersion: v1
+kind: Route
+metadata:
+  name: fis-rest-2
+  labels:
+    app: uaex-fis-2
 spec:
   to:
     kind: Service

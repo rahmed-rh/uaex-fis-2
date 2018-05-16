@@ -1,9 +1,12 @@
+metadata:
+  labels:
+    app: uaex-fis-2
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: uaex-fis-1
+        app: uaex-fis-2
     spec:
       containers:
         - 
