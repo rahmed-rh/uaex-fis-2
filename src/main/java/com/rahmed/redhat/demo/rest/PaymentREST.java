@@ -20,7 +20,7 @@ public class PaymentREST extends RouteBuilder {
 					.when().simple("${body.approved} == true")
 					 	.log("Payment Approved")
 					 	//I need to create a JMS
-					 	.bean(ProcessorBean.class, "executeRules(${body})")
+					 	.bean(ProcessorBean.class, "processJMSMessage(${body})")
 					 	.to("amq:queue:TESTQUEUE")
 						.transform(constant("OK"))
 					.otherwise()
