@@ -21,7 +21,9 @@ openshift.withCluster() {
     }
     echo "The CM is ${cm}"
     echo "The fis-1-app-git-url is ${cm.data['fis-1-app-git-url']}"
+    echo "The fis-1-app-name is ${cm.data['fis-1-app-name']}"
     echo "The fis-2-app-git-url is ${cm.data['fis-2-app-git-url']}"
+    echo "The fis-2-app-name is ${cm.data['fis-2-app-name']}"
 
    }
 
@@ -38,8 +40,11 @@ openshift.withCluster() {
      sh "mvn clean compile -s settings.xml"
     }
     stage('Deploy to DEV') {
-     // Run the fabric8
-     sh "mvn fabric8:deploy -s settings.xml"
+    	//echo "Deleting OLD JDG Env if exist"
+	    //openshift.selector( 'all', [ application: cm.data['fis-1-app-name'] ] ).delete()
+	    //openshift.selector( 'pvc', [ application: cm.data['fis-1-app-name'] ] ).delete()
+     	// Run the fabric8
+     	sh "mvn fabric8:deploy -s settings.xml"
     }
 
    }
