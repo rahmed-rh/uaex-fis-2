@@ -3,7 +3,7 @@ spec:
   template:
     metadata:
       labels:
-        app: vodafone-fis
+        app: uaex-fis-1
     spec:
       containers:
         - 
@@ -22,8 +22,8 @@ spec:
           - name: KIE_CONTAINER
             value: payments
           - name: KIE_SERVICE_USERNAME
-            value: stelios
+            value: kieserver
           - name: KIE_SERVICE_PASSWORD
-            value: stelios123!
+            value: kieserver123
           - name: JAVA_DIAGNOSTICS
             value: true

@@ -16,14 +16,19 @@
 package com.rahmed.redhat.demo.rest;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.drools.core.command.runtime.rule.GetObjectsCommand;
 import org.kie.api.KieServices;
 import org.kie.api.command.BatchExecutionCommand;
 import org.kie.api.command.Command;
 import org.kie.api.command.KieCommands;
 import org.kie.api.runtime.ExecutionResults;
+import org.kie.internal.command.CommandFactory;
 import org.kie.server.api.model.ServiceResponse;
+import org.kie.server.client.KieServicesClient;
 import org.kie.server.client.KieServicesConfiguration;
 import org.kie.server.client.KieServicesFactory;
 import org.kie.server.client.RuleServicesClient;
@@ -39,6 +44,11 @@ import com.redhat.consulting.domain.InFact;
 public class PaymentService {
 
 	final static Logger LOG = LoggerFactory.getLogger(PaymentService.class);
+
+	private final String IN_HANDLE = "KIE_IN_HANDLE";
+	private final String RESULTS_HANDLE = "resultsList";
+	private final String OBJECT_HANDLE = "KIE_OBJECT_HANDLE";
+	private final String APPROVAL_OUT_IDENTIFIER = "KIE_RESULT";
 
 	/**
 	 * The host name of the kie service.
@@ -64,8 +74,6 @@ public class PaymentService {
 	 * The password of the containerId service.
 	 */
 	private String containerId;
-
-	private final String APPROVAL_OUT_IDENTIFIER = "KIE_RESULT";
 
 	public String getHost() {
 		return host;
@@ -108,36 +116,47 @@ public class PaymentService {
 	}
 
 	public void executeRules(Payment payment) {
-		Object obj = kieRestAPI(payment.getAmount());
-		payment.setApproved(obj != null && ((String) obj).equalsIgnoreCase("APPROVED"));
+		List<String> result = kieRestAPI(payment.getAmount());
+
+		payment.setApproved(result != null && result.size() > 0 && result.get(0).equalsIgnoreCase("APPROVED"));
 	}
 
 	private String getKieUrl() {
 		return "http://" + host + ":" + port + "/kie-server/services/rest/server";
 	}
 
-	private Object kieRestAPI(Double amount) {
+	private List<String> kieRestAPI(Double value) {
 
 		KieServicesConfiguration configuration = KieServicesFactory.newRestConfiguration(getKieUrl(), username,
 				password);
-		RuleServicesClient kieServicesClient = (RuleServicesClient) KieServicesFactory
-				.newKieServicesClient(configuration);
+		Set<Class<?>> allClasses = new HashSet<Class<?>>();
+		allClasses.add(com.redhat.consulting.domain.InFact.class);
+		configuration.addExtraClasses(allClasses);
+
+		KieServicesClient kieServicesClient = KieServicesFactory.newKieServicesClient(configuration);
+		RuleServicesClient ruleClient = kieServicesClient.getServicesClient(RuleServicesClient.class);
 		KieCommands commandsFactory = KieServices.Factory.get().getCommands();
 
-		List<Command<?>> commands = new ArrayList<Command<?>>();
-		commands.add(commandsFactory.newInsert(new InFact(amount), APPROVAL_OUT_IDENTIFIER));
-		commands.add(commandsFactory.newFireAllRules());
-		BatchExecutionCommand batchExecution = commandsFactory.newBatchExecution(commands);
+		List<Command> cmds = new ArrayList<>();
+		cmds.add(CommandFactory.newSetGlobal(RESULTS_HANDLE, new ArrayList<String>(), true));
+		cmds.add(CommandFactory.newInsert(new InFact(value), IN_HANDLE));
+		// cmds.add( CommandFactory.newInsert(new String(), "out" ));
+		GetObjectsCommand getObjectsCommand = new GetObjectsCommand();
+		cmds.add(commandsFactory.newGetObjects(OBJECT_HANDLE));
+		cmds.add(commandsFactory.newFireAllRules());
+		BatchExecutionCommand batchExecution = commandsFactory.newBatchExecution(cmds);
+		ServiceResponse<ExecutionResults> response = ruleClient.executeCommandsWithResults(containerId, batchExecution);
 
-		ServiceResponse<ExecutionResults> response = kieServicesClient.executeCommandsWithResults(containerId,
-				batchExecution);
-		LOG.info("" + response);
+		LOG.info("KIESERVER results identifiers ----->: " + response.getResult().getIdentifiers()
+				+ "\n -------------------------------------");
 
-		ExecutionResults results = response.getResult();
-		Object returnValue = results.getValue(APPROVAL_OUT_IDENTIFIER);
+		LOG.info(" APPROVALS List " + response.getResult().getValue(RESULTS_HANDLE)); // returns the ArrayList
 
-		LOG.info("returnValue==" + returnValue);
-		return returnValue;
+		
+
+		return response.getResult().getValue(RESULTS_HANDLE) != null
+				? (ArrayList<String>) response.getResult().getValue(RESULTS_HANDLE)
+				: null;
 	}
 
 }
