@@ -36,9 +36,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+
+
 
 import org.drools.compiler.runtime.pipeline.impl.DroolsJaxbHelperProviderImpl;
 import org.drools.core.command.runtime.rule.GetObjectsCommand;
@@ -61,6 +60,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import com.redhat.consulting.domain.InFact;
+
+import org.kie.server.api.marshalling.Marshaller;
+import org.kie.server.api.marshalling.MarshallerFactory;
+import org.kie.server.api.commands.CommandScript;
 
 @Component
 @ConfigurationProperties(prefix = "kie")
@@ -172,23 +175,18 @@ public class PaymentService {
 		MarshallingFormat marshallingFormat = getMarshallingFormat();
 		configuration.setMarshallingFormat(marshallingFormat);
 		if (MarshallingFormat.JAXB.equals(marshallingFormat)) {
-
+			
+		    ClassLoader classLoader;
 			Set<Class<?>> classes = new HashSet<Class<?>>();
 			classes.add(InFact.class);
 			configuration.addExtraClasses(classes);
-
-			JAXBContext jaxbContext;
-			try {
-				jaxbContext = DroolsJaxbHelperProviderImpl
-						.createDroolsJaxbContext(Arrays.asList("com.redhat.consulting.domain.InFact"), null);
-				marshaller = jaxbContext.createMarshaller();
-				StringWriter xml = new StringWriter();
-				marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			} catch (ClassNotFoundException | JAXBException e) {
-				LOG.error("Unable to create JAXB Context  ", e);
+			if(LOG.isInfoEnabled())
+			{
+				classLoader = Thread.currentThread().getContextClassLoader() != null ? Thread.currentThread().getContextClassLoader() : CommandScript.class.getClassLoader();
+				marshaller = MarshallerFactory.getMarshaller(configuration.getExtraClasses(), configuration.getMarshallingFormat(), classLoader);
 			}
-			
 
+	        
 		}
 
 		KieServicesClient kieServicesClient = KieServicesFactory.newKieServicesClient(configuration);
@@ -205,15 +203,12 @@ public class PaymentService {
 		LOG.info("About to call newBatchExecution");
 
 		BatchExecutionCommand batchExecution = commandsFactory.newBatchExecution(cmds);
-		LOG.info("About to call executeCommandsWithResults");
-		if (MarshallingFormat.JAXB.equals(marshallingFormat)) {
-			try {
-				marshaller.marshal(batchExecution, System.out);
-			} catch (JAXBException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		if(LOG.isInfoEnabled())
+		{
+			LOG.info("About to call executeCommandsWithResults -- batchExecution=["+marshaller.marshall(batchExecution)+"]");
 		}
+		
+		
 		ServiceResponse<ExecutionResults> response = ruleClient.executeCommandsWithResults(containerId, batchExecution);
 
 		LOG.info("KIESERVER results identifiers ----->: " + response.getResult().getIdentifiers()
