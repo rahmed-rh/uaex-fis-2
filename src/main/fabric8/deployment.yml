@@ -27,6 +27,6 @@ spec:
           - name: KIE_SERVICE_USERNAME
             value: kieserver
           - name: KIE_SERVICE_PASSWORD
-            value: kieserver123
+            value: kieserver123!
           - name: JAVA_DIAGNOSTICS
             value: true
