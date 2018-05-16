@@ -86,27 +86,24 @@
 			<artifactId>camel-script</artifactId>
 		</dependency>
 
-		<!-- BRMS -->
-		<dependency>
-			<groupId>org.kie</groupId>
-			<artifactId>kie-api</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
+		<!-- dependency>
 			<groupId>org.kie.remote</groupId>
-			<artifactId>kie-remote-common</artifactId>
-			<version>${kie.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.kie.server</groupId>
-			<artifactId>kie-server-api</artifactId>
-			<scope>compile</scope>
-		</dependency>
+			<artifactId>kie-remote-client</artifactId>
+		</dependency> -->
+		
 		<dependency>
 			<groupId>org.kie.server</groupId>
 			<artifactId>kie-server-client</artifactId>
-			<scope>compile</scope>
+		</dependency>
+
+		<!-- dependency>
+			<groupId>org.kie.remote</groupId>
+			<artifactId>kie-server-remote</artifactId>
+		</dependency>-->
+
+		<dependency>
+			<groupId>org.kie</groupId>
+			<artifactId>kie-api</artifactId>
 		</dependency>
 
 		<!-- testing -->
