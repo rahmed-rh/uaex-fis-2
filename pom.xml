@@ -20,7 +20,7 @@
 
 		<!-- configure the versions you want to use here -->
 		<fabric8.version>2.2.170.redhat-000023</fabric8.version>
-		<spring-boot.version>1.3.3.RELEASE</spring-boot.version>
+		<spring-boot.version>1.5.0.RELEASE</spring-boot.version>
 		<kie.version>6.5.0.Final-redhat-9</kie.version>
 
 		<!-- maven plugin versions -->
